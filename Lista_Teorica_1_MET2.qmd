@@ -1,0 +1,221 @@
+---
+title: ""
+author: ""
+date: ""
+
+title-block: false
+toc: false
+number-sections: true
+
+lang: pt-BR
+
+bibliography: referencias.bib
+csl: abnt.csl
+
+format:
+  pdf:
+    pdf-engine: lualatex
+    documentclass: article
+    papersize: a4
+    fontsize: 12pt
+    fig-cap-location: top
+
+    geometry:
+      - left=3cm
+      - top=3cm
+      - right=2cm
+      - bottom=2cm
+
+    colorlinks: true
+
+    include-in-header:
+      text: |
+
+        % ------------------------------------------------
+        % Matemática
+        % ------------------------------------------------
+        \usepackage{amsmath}
+        \usepackage{amsfonts}
+        \usepackage{amssymb}
+
+        % ------------------------------------------------
+        % Estilo e layout
+        % ------------------------------------------------
+        \usepackage{fancyhdr}
+        \usepackage{colortbl}
+        \usepackage{titletoc}
+        \usepackage{titlesec}
+        \usepackage{setspace}
+        \usepackage{indentfirst}
+        \usepackage{multirow}
+        \usepackage{float}
+        \usepackage{booktabs}
+        \usepackage{enumitem}
+        \usepackage{quoting}
+        \usepackage{epigraph}
+        \usepackage{adjustbox}
+        \usepackage{bm}
+        \usepackage{subcaption}
+        \usepackage{array}
+
+        % ------------------------------------------------
+        % Bibliografia ABNT
+        % ------------------------------------------------
+        \usepackage[alf]{abntex2cite}
+
+        % ------------------------------------------------
+        % Configurações gerais
+        % ------------------------------------------------
+        \raggedbottom
+
+        % ------------------------------------------------
+        % Cabeçalho
+        % ------------------------------------------------
+        \pagestyle{fancy}
+        \fancyhf{}
+
+        \setlength{\headheight}{16pt}
+
+        \fancyhead[RO, LE]{\thepage}
+        \fancyhead[RE, LO]{\nouppercase{\emph{\leftmark}}}
+
+        \renewcommand{\sectionmark}[1]{\markboth{#1}{}}
+
+        % ------------------------------------------------
+        % Sumário
+        % ------------------------------------------------
+        \titlecontents{section}
+          [0cm]
+          {}
+          {\bfseries\contentslabel{2em}}
+          {}
+          {\titlerule*[.75pc]{.}\contentspage}
+
+        \titlecontents{subsection}
+          [0.75cm]
+          {}
+          {\contentslabel{2em}}
+          {}
+          {\titlerule*[.75pc]{.}\contentspage}
+
+        % ------------------------------------------------
+        % Espaçamento
+        % ------------------------------------------------
+        \onehalfspacing
+
+        \setlength{\parindent}{1.25cm}
+        \setlength{\parskip}{0.3cm}
+        
+        \setlength{\textfloatsep}{6pt}
+        \setlength{\intextsep}{6pt}
+        \setlength{\floatsep}{6pt}
+        
+        \captionsetup[figure]{position=top, skip=2pt}
+        \captionsetup[subfigure]{skip=2pt}
+        
+        % ------------------------------------------------
+        % Títulos
+        % ------------------------------------------------
+        \titlespacing*{\section}{0cm}{0cm}{0.5cm}
+        \titlespacing*{\subsection}{0cm}{0.5cm}{0.5cm}
+        \titlespacing*{\subsubsection}{0cm}{0.5cm}{0.5cm}
+
+---
+
+\begin{titlepage}
+\begin{center}
+
+\vspace*{1cm}
+
+\includegraphics[scale = 1.0]{imagens/unb.png}
+
+\vspace{1cm}
+
+{\bf \large Universidade de Brasília \\
+Departamento de Estatística}
+
+\vspace{3cm}
+
+{\Large \textbf{Lista Teórica 1}}
+
+\vspace{2.5cm}
+
+{\large Carlos César Yoshitake Júnior}
+
+\vspace{0.25cm}
+
+{\large Prof. Raul Matsushita}
+
+\end{center}
+
+\vspace{1.5cm}
+
+\begin{flushright}
+\begin{minipage}{7.5cm}
+Resolução da lista de exercícios teórica 1.
+\end{minipage}
+\end{flushright}
+
+\vspace{2.5cm}
+
+\begin{center}
+{\bf Brasília} \\
+{\bf 2026}
+\end{center}
+
+\end{titlepage}
+
+\tableofcontents
+
+\newpage
+
+\singlespacing
+
+# Exercício 1
+
+Uma amostra aleatória simples $X_1, \dots, X_n$ foi retirada de uma população com média $\mu$ e variância conhecida $\sigma^2$. Para se testar a hipótese nula $H_o : \mu = \mu_0$ contra a alternativa $H_0 : \mu \neq \mu_0$, com $n$ suficientemente grande, a estatística do teste sob $H_0$
+
+$$
+Z = \frac{\bar{X} - \mu_0}{\sigma / \sqrt{n}}
+$$
+Em que $\bar{X}$ representa a média amostral, remete a um teste paramétrico ou não paramétrico? Justifique sua resposta.
+
+- *Resposta:*
+
+Com $n$ suficientemente grande, é possível utilizar do Teorema do Limite Central. Assim, pelo TLC, a distribuição da média amostral $\bar{X}$ se aproxima de uma distribuição normal $N(\mu, \sigma^2/n)$, quando $n \to \infty$, independente de qual seja a distribuição original. Logo, a resposta é não paramétrico, pois um teste paramétrico tradicional exige suposições estritas sobre a distribuição subjacente dos dados, o que não é o caso, uma vez que a aproximação independe da distribuição original.
+
+# Exercício 2
+
+Um pesquisador deseja comparar duas dietas alimentares $A$ e $B$ para diabéticos. Considerando que o resultado obtido pela dieta depende das variáveis sexo, idade e tempo de diagnóstico da doença:"
+
+i) Explique, detalhadamente, como ele deve efetuar seu estudo (procedimento de coleta de dados e tabulação)
+
+- *Resposta:* 
+
+O pesquisador deve coletar os dados de maneira pareada, com o "match" feito a partir de características similares nas variáveis disponíveis, de forma que o indíviduo $X_i$ da dieta A seja semelhante ao indíviduo $Y_i$ da dieta B. A tabulação deve ser composta por 4 colunas, sendo a primeira o Par i, a segunda a dieta A, a terceira a dieta B e a quarta a diferença entre a $X_i - Y_i$. Esse exercício se assemelha ao exemplo 3.2 do [@HWC].
+
+ii) Enumere possíveis testes não paramétricos que sejam adequados para essa comparação
+
+- *Resposta:*
+
+Os testes apontados para esse tipo de situação no [@BCMS] são o Teste de Wilcoxon e o Teste de permutação. O Teste dos Sinais de Fisher, proveniente dos materiais da Aula 3 também é adequado.
+
+# Exercício 3
+
+Dezesseis veículos de passeio foram inspecionados em uma operação do Detran em determinado dia no Distrito Federal. Dessa amostra, supostamente aleatória, $x$ veículos foram apreendidos por causa de irregularidades. Explique como você testaria a hipótese (nula) de que o percentual populacional de veículos irregulares no DF é igual ou inferior a 10%.
+
+- *Resposta:*
+
+Através do teste Binomial. Primeiro, definiria X como o número de veículos apreendidos entre os $n=16$ inspecionados. Sob independência das vistorias, $X \sim Binomial(16,p)$. Depois definiria as hipóteses: $H_0 : p \le 0,10$ e $H_1 : p > 0,10$. Assim, é possível calcular o $p-valor$ usando o código:
+
+```{r}
+#| echo: true
+#| output: false
+
+
+binom.test(x=10, n=16, p=0.1, alternative = "greater")
+```
+
+Note que, x = 10 é um número arbitrário que representa a quantidade de veículos apreendidos na amostra, e deve ser substítuido pelo valor observado real.
+
+# Referências
