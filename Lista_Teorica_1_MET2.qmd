@@ -198,7 +198,7 @@ ii) Enumere possíveis testes não paramétricos que sejam adequados para essa c
 
 - *Resposta:*
 
-Os testes apontados para esse tipo de situação no [@BCMS] são o Teste de Wilcoxon e o Teste de permutação. O Teste dos Sinais de Fisher, proveniente dos materiais da Aula 3 também é adequado.
+Os testes apontados para esse tipo de situação no [@BCMS] são o Teste de Wilcoxon,  Teste de permutação e Teste dos Sinais de Fisher.
 
 # Exercício 3
 
@@ -217,5 +217,70 @@ binom.test(x=10, n=16, p=0.1, alternative = "greater")
 ```
 
 Note que, x = 10 é um número arbitrário que representa a quantidade de veículos apreendidos na amostra, e deve ser substítuido pelo valor observado real.
+
+# Exercício 4
+
+Dez amostras de água foram retiradas de diferentes reservatórios de uma estação de tratamento de água, registrando-se os valores $X_1, \dots, X_{10}$ do pH (potencial de hidrogênio)
+
+i) Supondo que seja importante que a água tratada tenha um pH mediano igual ou superior a 7, que método você sugere para testar as seguintes hipóteses:
+
+
+$$
+\begin{aligned}
+H_o &: Med(X) \leq 7\\
+H_1 &: Med(X) > 7 
+\end{aligned}
+$$
+- *Resposta:*
+
+O [@HWC] traz, na página 63, no tópico "A Distribuition-Free Sign Test (FISHER)", ou seja, Teste dos Sinais. Assim, compara-se cada uma das $n=10$ medições de pH com valor 7. Define-se a variável de contagem de sinais positivos $K = \sum{I(X_i) > 7}$. Sob $H_0$, $K \sim Binomial(n^*, 0.5)$ (desconsiderando observações iguais a 7).
+
+ii) Agora, suponha que o pH da água tratada deve estar entre 7 e 7.5 em pelo menos 90% dos casos. Para essa situação, como você testaria as seguintes hipóteses:
+
+$$
+\begin{aligned}
+H_0 &: P(7 \leq X \leq 7.5) \leq 0.90 \\
+H_1 &: P(7 \leq X \leq 7.5) > 0.90
+\end{aligned}
+$$
+- *Resposta:*
+
+Para testar casos onde uma proporção de valores devem estar dentro de um intervalo específico o Teste Binomial é o mais indicado. No [@HWC], página 11-22 esse teste é explicado na íntegra. Logo, os seguintes passos devem ser seguidos:
+
+- 1: Criação de variável indicadora $Y_i$ para cada uma das $n=10$ medições de pH ($X_1, \dots, X_{10}$), que recebe valor 1 caso a medição esteja dentro do intervalo desejado (No caso, $7 \leq X_n \leq 7.5$) recebe 1, e 0 caso contrário)
+- 2: Define-se p = $P(7 \leq X \leq 7.5)$ como a probabilidade populacional de uma amostra ter o pH no intervalo ideal. A estatística do teste é a contagem do número total de sucessos:
+
+$$
+\sum^{10}_{i=1}{Y_i \sim Binomial(10,p)}
+$$
+- 3: Define-se as hipóteses associadas:
+$$
+\begin{aligned}
+H_0 &: p \leq 0.90 \\
+H_1 &: p > 0.90
+\end{aligned}
+$$
+- 4: Sob a fronteira de $H_0$ ($p-0.90$), o valor-p unilateral a direita para $y_{obs}$ sucessos observados na amostra é dado por:
+$$
+valor-p = P(Y\ge y_{obs}|p =0.90) = \sum^{10}_{k=y_{obs}} \binom{10}{k} (0.90)^k (0.10)^{10-k}
+$$
+# Exercício 5
+
+O teste de Kolmogorov-Smirnov é tradicionalmente utilizado para avaliar a aderência de uma amostra a uma distribuição de probabilidade contínua.
+
+i) Explique por que a presença de observações empatadas pode se tornar inadequada a aplicação do teste de Kolmogorov-Smirnov em sua forma usual para testar a hipótese de normalidade, como está implementado, por exemplo, na função \texttt{ks.test()} do R.
+
+- *Resposta:*
+
+O teste de Kolmogorov-Smirnov clássico para uma amostra é um procedimento não paramétrico de aderência (goodness-of-fit) projetado para avaliar se os dados de uma amostra provêm de uma população com uma distribuição de probabilidade $F_0(x)$ especificada.
+
+Para que a distribuição nula exata do teste KS clássico seja válida, o procedimento estabelece duas restrições:
+
+- Continuidade estrita da população: A variável deve ser contínua, o que implica que a probabilidade teórica de ocorrência de empates é \textbf{nula} $P(X_i = X_j) = 0$;
+- Parâmetros totalmente especificados a priori: A distribuição $F_0(x)$ sob a hipótese nula $H_0 : F(x) = F_0(x)$ não possui parâmetros desconhecidos; todos seus parâmetros (por exemplo, \mu e \sigma) devem ser fixados teoricamente antes do teste, sem serem \textbf{estimados da própria amostra}.
+
+Assim, a partir da restrição da Continuidade estrita da população o teste de Kolmogorov-Smirnov clássico se torna inadequado para presença de observações empatadas, pois essas observações trazem alterações nos saltos da Distribuição Empírica ($\hat{F}_n$): Quando ocorrem empates (devido a arredondamentos, limites de precisão do instrumento de medição ou dados discretizados), a Função de Distribuição Acumulada Empírica ($\hat{F}_n$) deixa de ter apenas degraus individuais de tamanho $1/n$ e dá saltos múltiplos (de tamanho $k/n$) no mesmo ponto. Dessa forma, o teste se torna conservador, uma vez que a alteração nos degraus modifica a distribuição nula exata da estatística de teste $D = max|F_n(x) - F_0(x)|$. Como consequência, a utilização da tabela clássica do KS torna o teste conservador, ou seja, o nível de significância real fica abaixo do nível nominal \alpha estipulado, reduzindo o poder do teste.
+
+ii) Discuta possíveis soluções para realização de um teste de normalidade quando a amostra apresenta observações empatadas. Considere, em particular, situações que os empates são decorrentes da precisão ou do arredondamento do instrumento de medida.
 
 # Referências
