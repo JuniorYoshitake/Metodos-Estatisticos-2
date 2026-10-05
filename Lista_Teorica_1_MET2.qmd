@@ -283,4 +283,20 @@ Assim, a partir da restrição da Continuidade estrita da população o teste de
 
 ii) Discuta possíveis soluções para realização de um teste de normalidade quando a amostra apresenta observações empatadas. Considere, em particular, situações que os empates são decorrentes da precisão ou do arredondamento do instrumento de medida.
 
+- *Resposta:*
+
+Quando ocorrem empates decorrentes da precisão ou do arredondamento do instrumento de medição, o teste de Kolmogorov-Smirnov em sua forma assintótica usual torna-se inadequado. Para contornar essa limitação, os materiais da disciplina e a literatura especializada indicam as seguintes soluções:
+
+- Teste de Kolmogorov-Smirnov por Simulação de Monte Carlo: Para contornar a invalidade das tabelas clássicas quando os parâmetros populacionais ($\mu$ e $\sigma$) são estimados a partir da amostra e há empates, obtém-se a distribuição nula empírica da estatística $D$ gerando-se $B$ amostras independentes $N(0,1)$ de tamanho $n$. Em cada réplica, reestimam-se $\bar{X}^{(b)}$ e $S^{(b)}$ e calcula-se a estatística $D^{(b)}$. O valor-$p$ de Monte Carlo é dado pela proporção de réplicas em que a discrepância simulada supera a observada: 
+
+$$
+\hat{p} = \frac{1 + \sum_{b=1}^B I\left(D^{(b)} \ge D_{\text{obs}}\right)}{B + 1}
+$$
+
+- Teste de Lilliefors (\texttt{nortest::lillie.test}): Trata-se de uma adaptação do teste KS desenvolvida para testar normalidade com média e variância desconhecidas e estimadas dos dados. Esse teste utiliza tabelas e quantis críticos ajustados que acomodam observações com empates discretizados por arredondamento.Teste de Shapiro-Wilk (shapiro.test): Mede o grau de aderência linear entre as estatísticas de ordem observadas $X_{(i)}$ e os valores esperados das estatísticas de ordem normais padrão ($m_i$). É um dos testes não paramétricos de aderência mais poderosos para amostras pequenas e médias, demonstrando elevada robustez diante de empates causados pela precisão do instrumento.
+
+- Teste de Anderson-Darling (\texttt{nortest::ad.test}): Avalia a distância entre a FDAE e a normal ajustada aplicando o fator de ponderação $\frac{1}{F_0(x)[1-F_0(x)]}$, o que confere maior sensibilidade a discrepâncias localizadas nas caudas da distribuição. Lida bem com dados com arredondamento e utiliza tabelas ajustadas para parâmetros estimados.
+
+- Técnica de Jittering (Perturbação Aleatória Mínima): Adiciona-se a cada observação empatada um ruído aleatório contínuo $U(-\epsilon, \epsilon)$, com $\epsilon$ inferior ao limite de resolução do instrumento de medida, desfazendo os empates numéricos sem alterar a forma funcional da distribuição.
+
 # Referências
