@@ -1,0 +1,794 @@
+---
+title: ""
+author: ""
+date: ""
+
+title-block: false
+toc: false
+number-sections: true
+
+lang: pt-BR
+
+bibliography: referencias.bib
+csl: abnt.csl
+
+execute:
+  echo: false
+  warning: false
+  message: false
+
+format:
+  pdf:
+    pdf-engine: lualatex
+    documentclass: article
+    papersize: a4
+    fontsize: 12pt
+    fig-cap-location: top
+    fig-width: 6.3
+    fig-height: 3.2
+    fig-pos: H
+    tbl-pos: H
+
+    geometry:
+      - left=3cm
+      - top=3cm
+      - right=2cm
+      - bottom=2cm
+
+    colorlinks: true
+
+    include-in-header:
+      text: |
+
+        % ------------------------------------------------
+        % Matemática
+        % ------------------------------------------------
+        \usepackage{amsmath}
+        \usepackage{amsfonts}
+        \usepackage{amssymb}
+
+        % ------------------------------------------------
+        % Estilo e layout
+        % ------------------------------------------------
+        \usepackage{fancyhdr}
+        \usepackage{colortbl}
+        \usepackage{titletoc}
+        \usepackage{titlesec}
+        \usepackage{setspace}
+        \usepackage{indentfirst}
+        \usepackage{multirow}
+        \usepackage{float}
+        \floatplacement{table}{H}
+        \usepackage{booktabs}
+        \usepackage{enumitem}
+        \usepackage{quoting}
+        \usepackage{epigraph}
+        \usepackage{adjustbox}
+        \usepackage{bm}
+        \usepackage{subcaption}
+        \usepackage{array}
+
+        % ------------------------------------------------
+        % Bibliografia ABNT
+        % ------------------------------------------------
+        \usepackage[alf]{abntex2cite}
+
+        % ------------------------------------------------
+        % Configurações gerais
+        % ------------------------------------------------
+        \raggedbottom
+
+        % ------------------------------------------------
+        % Cabeçalho
+        % ------------------------------------------------
+        \pagestyle{fancy}
+        \fancyhf{}
+
+        \setlength{\headheight}{16pt}
+
+        \fancyhead[RO, LE]{\thepage}
+        \fancyhead[RE, LO]{\nouppercase{\emph{\leftmark}}}
+
+        \renewcommand{\sectionmark}[1]{\markboth{#1}{}}
+
+        % ------------------------------------------------
+        % Sumário
+        % ------------------------------------------------
+        \titlecontents{section}
+          [0cm]
+          {}
+          {\bfseries\contentslabel{2em}}
+          {}
+          {\titlerule*[.75pc]{.}\contentspage}
+
+        \titlecontents{subsection}
+          [0.75cm]
+          {}
+          {\contentslabel{2em}}
+          {}
+          {\titlerule*[.75pc]{.}\contentspage}
+
+        % ------------------------------------------------
+        % Espaçamento
+        % ------------------------------------------------
+        \onehalfspacing
+
+        \setlength{\parindent}{1.25cm}
+        \setlength{\parskip}{0.3cm}
+
+        \setlength{\textfloatsep}{6pt}
+        \setlength{\intextsep}{6pt}
+        \setlength{\floatsep}{6pt}
+
+        \captionsetup[figure]{position=top, skip=2pt}
+        \captionsetup[subfigure]{skip=2pt}
+
+        % ------------------------------------------------
+        % Títulos
+        % ------------------------------------------------
+        \titlespacing*{\section}{0cm}{0cm}{0.5cm}
+        \titlespacing*{\subsection}{0cm}{0.5cm}{0.5cm}
+        \titlespacing*{\subsubsection}{0cm}{0.5cm}{0.5cm}
+
+---
+
+\begin{titlepage}
+\begin{center}
+
+\vspace*{1cm}
+
+\includegraphics[scale = 1.0]{imagens/unb.png}
+
+\vspace{1cm}
+
+{\bf \large Universidade de Brasília \\
+Departamento de Estatística}
+
+\vspace{3cm}
+
+{\Large \textbf{Prova 1}}
+
+\vspace{2.5cm}
+
+{\large Carlos César Yoshitake Júnior}
+
+\vspace{0.25cm}
+
+{\large Prof. Raul Matsushita}
+
+\end{center}
+
+\vspace{1.5cm}
+
+\begin{flushright}
+\begin{minipage}{7.5cm}
+Resolução dos exercícios práticos da prova 1.
+\end{minipage}
+\end{flushright}
+
+\vspace{2.5cm}
+
+\begin{center}
+{\bf Brasília} \\
+{\bf 2026}
+\end{center}
+
+\end{titlepage}
+
+\tableofcontents
+
+\newpage
+
+\singlespacing
+
+```{r}
+#| label: setup
+#| include: false
+
+library(readxl)     # leitura dos arquivos .xlsx
+library(knitr)      # tabelas
+library(kableExtra) # formatação das tabelas
+
+alpha <- 0.05
+
+# formatação com vírgula decimal
+fmt   <- function(x, d = 3) {
+  formatC(x, format = "f", digits = d, decimal.mark = ",",
+          big.mark = ".")
+}
+fmt_p <- function(p) ifelse(p < 0.001, "< 0,001", fmt(p, 3))
+
+# tabela no padrão do relatório
+tabela <- function(df, ...) {
+  kable_styling(
+    kable(df, format = "latex", booktabs = TRUE, linesep = "",
+          row.names = FALSE, escape = FALSE, ...),
+    latex_options = "scale_down"
+  )
+}
+
+# Shapiro-Wilk por grupo: n, mediana, W e valor-p
+sw_grupo <- function(x, g) {
+  do.call(rbind, lapply(split(x, g), function(v) {
+    v  <- v[!is.na(v)]
+    sw <- shapiro.test(v)
+    data.frame(n = length(v), Mediana = median(v),
+               W = unname(sw$statistic), p = sw$p.value)
+  }))
+}
+```
+
+# Introdução
+
+Os exercícios da Prova 1 foram todos resolvidos seguindo o fluxo:
+
+- Passo 1: Estrutura amostral e tipo de dados;
+- Passo 2: Verificação de normalidade;
+- Passo 3: Hipóteses formais;
+- Passo 4: Execução dos testes e resultados;
+- Passo 5: Conclusão.
+
+O software estatístico (R), em sua versão 4.6.0 foi utilizado para a resolução, juntamente com a estrutura tipo markdown do Quarto para LaTeX. Todos os códigos se encontram no apêndice.
+
+# Exercício 1
+
+\textbf{Dados de terapia postural:}
+
+Antes de avaliar os efeitos da intervenção, investigue se os dados coletados antes da intervenção apresentam evidências de desbalanceamento sistemático entre as medidas dos lados direito e esquerdo. Para isso, aplique o(s) teste(s) apropriado(s) às variáveis pertinentes. Apresente os resultados obtidos e interprete-os, indicando em quais variáveis, se houver, existem evidências de desbalanceamento entre os lados.
+
+\textbf{Resolução:}
+
+```{r}
+#| label: ex1-dados
+#| include: false
+
+Q1 <- read_xlsx("dadosA.xlsx")
+
+# 6 pares (lado esquerdo L x lado direito R) antes da intervenção
+pares <- list(
+  FW  = c("LFW.b",  "RFW.b"),   # peso no antepé
+  RW  = c("LRW.b",  "RRW.b"),   # peso no retropé
+  FP  = c("LFP.b",  "RFP.b"),   # pressão plantar média
+  MFP = c("LFMP.b", "RFMP.b"),  # pressão plantar máxima
+  FCS = c("LFCS.b", "RFCS.b"),  # superfície de contato
+  FCP = c("LFCP.b", "RFCP.b")   # centro de pressão
+)
+
+# Passo 2: Shapiro-Wilk em d = L - R e em D = |L - R| por grupo
+norm_ex1 <- t(sapply(pares, function(v) {
+  d  <- Q1[[v[1]]] - Q1[[v[2]]]
+  D  <- abs(d)
+  sw <- shapiro.test(d)
+  c(W_d = unname(sw$statistic), p_d = sw$p.value,
+    p_D_Exp = shapiro.test(D[Q1$group == "with"])$p.value,
+    p_D_Con = shapiro.test(D[Q1$group == "without"])$p.value)
+}))
+norm_ex1
+```
+
+**Passo 1 - Estrutura amostral e tipo de dados.** São duas análises.
+
+(a) *Comparação entre os lados.* As medidas dos lados esquerdo (L) e direito (R) foram tomadas na mesma criança antes da intervenção (sufixo `.b`), portanto as amostras são **pareadas** ($n = 22$). Foram analisados os 6 pares de variáveis contínuas: peso no antepé (FW: `LFW.b` e `RFW.b`), peso no retropé (RW: `LRW.b` e `RRW.b`), pressão plantar média (FP: `LFP.b` e `RFP.b`), pressão plantar máxima (MFP: `LFMP.b` e `RFMP.b`), superfície de contato (FCS: `LFCS.b` e `RFCS.b`) e centro de pressão (FCP: `LFCP.b` e `RFCP.b`). A análise é feita sobre as diferenças $d_i = L_i - R_i$, $i = 1, \dots, 22$.
+
+(b) *Magnitude da assimetria entre os grupos.* Seguindo @moraes2024, calculou-se a assimetria absoluta $D_i = |L_i - R_i|$ e comparou-se o grupo Controle (`without`, $n = 11$) com o Experimental (`with`, $n = 11$). Como são crianças diferentes, as amostras são **independentes**.
+
+**Passo 2 - Verificação de normalidade.** Aplicou-se o teste de Shapiro-Wilk [@shapiro1965] às diferenças $d$ e à assimetria $D$ em cada grupo (@tbl-ex1-norm).
+
+```{r}
+#| label: tbl-ex1-norm
+#| tbl-cap: "Teste de Shapiro-Wilk para as diferenças $d = L - R$ ($n = 22$) e para $D = |L - R|$ em cada grupo ($n = 11$)."
+
+tab <- data.frame(
+  Variavel = rownames(norm_ex1),
+  W_d      = fmt(norm_ex1[, "W_d"]),
+  p_d      = fmt_p(norm_ex1[, "p_d"]),
+  p_D_Exp  = fmt_p(norm_ex1[, "p_D_Exp"]),
+  p_D_Con  = fmt_p(norm_ex1[, "p_D_Con"])
+)
+tabela(tab, align = "lrrrr",
+       col.names = c("Variável", "W ($d$)", "p-valor ($d$)",
+                     "p-valor ($D$, Experimental)",
+                     "p-valor ($D$, Controle)"))
+```
+
+Para as diferenças $d$, o teste de Shapiro-Wilk não rejeitou a normalidade em nenhuma variável (valores-p entre 0,406 e 0,870). Ainda assim, optou-se pelos testes de Wilcoxon pareado e dos sinais, que não dependem da suposição de normalidade e são adequados para uma amostra pequena ($n = 22$). Para a assimetria $D$, a normalidade foi rejeitada ($p < 0{,}05$) em pelo menos um dos grupos nas variáveis FP, MFP e FCS. Além disso, $D$ é não negativa e assimétrica por construção, o que justifica o teste de Mann-Whitney.
+
+**Passo 3 - Hipóteses formais.** Adotou-se $\alpha = 0{,}05$.
+
+(a) Para cada variável, pelo teste de Wilcoxon pareado:
+$$
+H_0: \text{Med}(d) = 0 \quad \text{versus} \quad H_1: \text{Med}(d) \neq 0.
+$$
+$H_0$: não há desbalanceamento sistemático, ou seja, a diferença entre os lados está centrada em zero. $H_1$: um dos lados tende sistematicamente a apresentar valores maiores. No teste dos sinais, as hipóteses equivalentes são $H_0: P(d > 0) = 0{,}5$ versus $H_1: P(d > 0) \neq 0{,}5$, com $K = \#\{d_i > 0\} \sim \text{Binomial}(n^*, 0{,}5)$ sob $H_0$, em que $n^*$ é o número de diferenças não nulas [@hollander2014].
+
+(b) Para cada variável, pelo teste de Mann-Whitney:
+$$
+H_0: F_{\text{Con}}(D) = F_{\text{Exp}}(D) \quad \text{versus} \quad H_1: F_{\text{Con}}(D) \neq F_{\text{Exp}}(D).
+$$
+$H_0$: a magnitude da assimetria tem a mesma distribuição nos dois grupos. $H_1$: a assimetria tende a ser maior em um dos grupos.
+
+**Passo 4 - Execução dos testes e resultados.**
+
+```{r}
+#| label: ex1-testes
+#| echo: true
+
+# (a) Wilcoxon pareado e teste dos sinais para cada par (L, R)
+res_a <- t(sapply(pares, function(v) {
+  L  <- Q1[[v[1]]]
+  R  <- Q1[[v[2]]]
+  d  <- L - R
+  wt <- wilcox.test(L, R, paired = TRUE)
+  st <- binom.test(sum(d > 0), sum(d != 0), p = 0.5)
+  c(V = unname(wt$statistic), p_Wilcoxon = wt$p.value,
+    positivos = sum(d > 0), n_nao_nulos = sum(d != 0),
+    p_Sinais = st$p.value)
+}))
+
+# (b) Mann-Whitney para D = |L - R| entre os grupos
+res_b <- t(sapply(pares, function(v) {
+  D  <- abs(Q1[[v[1]]] - Q1[[v[2]]])
+  mw <- wilcox.test(D ~ Q1$group)
+  c(Med_Exp = median(D[Q1$group == "with"]),
+    Med_Con = median(D[Q1$group == "without"]),
+    W = unname(mw$statistic), p_MannWhitney = mw$p.value)
+}))
+```
+
+Como há empates entre os valores absolutos das diferenças, o R calcula os valores-p pela aproximação normal com correção de continuidade. Os resultados estão nas Tabelas [-@tbl-ex1-a] e [-@tbl-ex1-b].
+
+```{r}
+#| label: tbl-ex1-a
+#| tbl-cap: "(a) Wilcoxon pareado e teste dos sinais para $d = L - R$ antes da intervenção ($n = 22$)."
+
+tab <- data.frame(
+  Variavel  = rownames(res_a),
+  V         = fmt(res_a[, "V"], 1),
+  p_W       = fmt_p(res_a[, "p_Wilcoxon"]),
+  K         = paste0(res_a[, "positivos"], " / ", res_a[, "n_nao_nulos"]),
+  p_S       = fmt_p(res_a[, "p_Sinais"])
+)
+tabela(tab, align = "lrrcr",
+       col.names = c("Variável", "V (Wilcoxon)", "p-valor (Wilcoxon)",
+                     "$K$ / $n^*$", "p-valor (Sinais)"))
+```
+
+```{r}
+#| label: tbl-ex1-b
+#| tbl-cap: "(b) Mann-Whitney para a assimetria $D = |L - R|$: Experimental ($n = 11$) versus Controle ($n = 11$)."
+
+tab <- data.frame(
+  Variavel = rownames(res_b),
+  Med_Exp  = fmt(res_b[, "Med_Exp"]),
+  Med_Con  = fmt(res_b[, "Med_Con"]),
+  W        = fmt(res_b[, "W"], 1),
+  p        = fmt_p(res_b[, "p_MannWhitney"])
+)
+tabela(tab, align = "lrrrr",
+       col.names = c("Variável", "Mediana de $D$ (Experimental)",
+                     "Mediana de $D$ (Controle)", "W", "p-valor"))
+```
+
+**Passo 5 - Conclusão.** (a) Em todas as 6 variáveis o valor-p é maior que $\alpha = 0{,}05$, tanto no teste de Wilcoxon pareado quanto no teste dos sinais. O menor valor-p ocorreu na superfície de contato (FCS: Wilcoxon $V = 141$, $p = 0{,}385$; sinais $p = 0{,}189$). Portanto, não se rejeita $H_0$: antes da intervenção, **não há evidência de desbalanceamento sistemático entre os lados direito e esquerdo em nenhuma das variáveis**. FW e RW apresentam o mesmo valor-p porque, em cada pé, o peso no antepé e o peso no retropé somam 1, de modo que $d_{FW} = -d_{RW}$. As assimetrias existem em nível individual, mas ocorrem nos dois sentidos e se compensam, o que justifica medir o desequilíbrio pela diferença absoluta $D = |L - R|$, como em @moraes2024.
+
+(b) Em todas as variáveis, $p \geq 0{,}646 > 0{,}05$; logo, não se rejeita $H_0$. A magnitude da assimetria antes da intervenção é semelhante nos grupos Controle e Experimental, ou seja, **os grupos partem de condições comparáveis**, o que é adequado para a avaliação posterior do efeito da intervenção.
+
+*Observação:* os registros 21 e 22 (Controle) repetem os valores de FP, MFP, FCS e FCP dos registros 10 e 11 (Experimental), o que sugere uma possível duplicação na digitação dos dados.
+
+\newpage
+
+# Exercício 2
+
+\textbf{Adesão ao tratamento antirretroviral (Questao2.csv)}
+
+Considere o indicador
+
+$$
+Z = log(\frac{CD4TN}{CD4T0})
+$$
+Estude a normalidade desse indicador entre os pacientes aderentes e não aderentes ao tratamento antirretroviral. Com base nos resultados
+obtidos, compare os dois grupos quanto a esse indicador, utilizando o
+procedimento estatístico que considerar apropriado. Apresente os resultados dos
+testes realizados e interprete-os no contexto do estudo.
+
+\textbf{Resolução:}
+
+```{r}
+#| label: ex2-dados
+#| include: false
+
+Q2 <- read.csv2("Questao_2.csv")
+
+# ganho relativo de CD4
+Q2$Z <- log(Q2$CD4TN / Q2$CD4T0)
+
+# Aderente como primeiro nível: alternative = "greater" testa
+# se os aderentes tendem a apresentar Z maior
+Q2$Adesao <- factor(Q2$grupo, levels = c(1, 0),
+                    labels = c("Aderente", "Não aderente"))
+table(Q2$Adesao)
+
+# Passo 2: Shapiro-Wilk em cada grupo
+norm_ex2 <- sw_grupo(Q2$Z, Q2$Adesao)
+norm_ex2
+```
+
+**Passo 1 - Estrutura amostral e tipo de dados.** Os pacientes aderentes (grupo 1, $n = 68$) e não aderentes (grupo 0, $n = 62$) são pessoas diferentes, portanto as amostras são **independentes** [@carvalho2007]. A variável analisada é o ganho relativo de linfócitos T CD4+, $Z = \log(CD4TN/CD4T0)$, contínua: $Z > 0$ indica aumento da contagem e $Z < 0$, queda.
+
+**Passo 2 - Verificação de normalidade.** O teste de Shapiro-Wilk foi aplicado a $Z$ em cada grupo (@tbl-ex2-norm).
+
+```{r}
+#| label: tbl-ex2-norm
+#| tbl-cap: "Teste de Shapiro-Wilk para $Z$ em cada grupo."
+
+tab <- data.frame(Grupo = rownames(norm_ex2), n = norm_ex2$n,
+                  Mediana = fmt(norm_ex2$Mediana),
+                  W = fmt(norm_ex2$W), p = fmt_p(norm_ex2$p))
+tabela(tab, align = "lrrrr",
+       col.names = c("Grupo", "n", "Mediana de Z", "W", "p-valor"))
+```
+
+Entre os aderentes, a normalidade é rejeitada ($W = 0{,}951$; $p = 0{,}010 < 0{,}05$). Entre os não aderentes, não é rejeitada ($W = 0{,}978$; $p = 0{,}333$). Como a suposição de normalidade não vale para os dois grupos, a comparação deve ser feita por um teste não paramétrico para duas amostras independentes, o teste de Mann-Whitney [@hollander2014].
+
+**Passo 3 - Hipóteses formais.** Adotou-se $\alpha = 0{,}05$ e teste unilateral, pois espera-se que os aderentes apresentem maior elevação das contagens:
+$$
+H_0: \text{Med}(Z_{\text{A}}) \leq \text{Med}(Z_{\text{N}}) \quad \text{versus} \quad H_1: \text{Med}(Z_{\text{A}}) > \text{Med}(Z_{\text{N}}),
+$$
+em que A indica aderentes e N, não aderentes. $H_0$: o ganho relativo de CD4 dos aderentes não é maior que o dos não aderentes. $H_1$: os aderentes tendem a apresentar ganho relativo maior.
+
+**Passo 4 - Execução do teste e resultados.**
+
+```{r}
+#| label: ex2-teste
+#| echo: true
+
+# Mann-Whitney unilateral: H1 = aderentes com Z maior
+mw_ex2 <- wilcox.test(Z ~ Adesao, data = Q2, alternative = "greater")
+mw_ex2
+```
+
+O teste resultou em $W = 1.960{,}5$ e $p = 0{,}755$. As medianas de $Z$ foram 0,372 entre os aderentes e 0,551 entre os não aderentes.
+
+**Passo 5 - Conclusão.** Como $p = 0{,}755 > 0{,}05$, não se rejeita $H_0$. **Não há evidência de que os pacientes aderentes apresentem maior ganho relativo de linfócitos T CD4+ do que os não aderentes.** A mediana de $Z$ foi, inclusive, um pouco menor entre os aderentes. Na escala original, $e^{0{,}372} \approx 1{,}45$ e $e^{0{,}551} \approx 1{,}73$: a contagem típica aumentou nos dois grupos (cerca de 45% e 73%, respectivamente), mas os dados não confirmam a expectativa de elevação maior entre os aderentes.
+
+\newpage
+
+# Exercício 3
+
+\textbf{Risco associado a contigências judiciais (Questao3.csv)}
+
+Investigue se os processos provenientes de varas cíveis e trabalhistas apresentam diferenças quanto às distribuições do valor pago e do tempo de duração do processo. Para a análise, considere as transformações
+
+$$
+X = log(VrPago), \quad Y = log(Tempo)
+$$
+Estude a normalidade dessas variáveis em cada grupo e, com base nos resultados obtidos, utilize os procedimentos estatísticos que considerar apropriados para comparar os processos cíveis e trabalhistas. Apresente os resultados dos testes realizados e interprete-os no contexto do estudo.
+
+\textbf{Resolução:}
+
+```{r}
+#| label: ex3-dados
+#| include: false
+
+Q3 <- read.table("Questao_3.csv", sep = ";", dec = ".", header = TRUE,
+                 fileEncoding = "latin1", na.strings = c("", "NA"),
+                 strip.white = TRUE, quote = "")
+
+# "^C.vel" reúne "Cível Seguros" e "Cível Outros"
+# (o ponto evita problemas de codificação com o acento)
+Q3$Vara <- ifelse(grepl("^C.vel", Q3$TIPO), "Cível",
+                  ifelse(Q3$TIPO == "Trabalhista", "Trabalhista", NA))
+Q3 <- subset(Q3, !is.na(Vara))  # descarta criminal e tributário
+table(Q3$Vara)
+
+# X: só processos com pagamento; Y: só processos com tempo > 0
+Q3$X <- ifelse(!is.na(Q3$VrPago) & Q3$VrPago > 0, log(Q3$VrPago), NA)
+Q3$Y <- ifelse(!is.na(Q3$tempo) & Q3$tempo > 0, log(Q3$tempo), NA)
+
+# Passo 2: Shapiro-Wilk em cada grupo
+norm_ex3 <- rbind(sw_grupo(Q3$X, Q3$Vara), sw_grupo(Q3$Y, Q3$Vara))
+norm_ex3
+
+# medianas na escala original
+tapply(Q3$VrPago, Q3$Vara, median, na.rm = TRUE)
+tapply(Q3$tempo[Q3$tempo > 0], Q3$Vara[Q3$tempo > 0], median,
+       na.rm = TRUE)
+```
+
+**Passo 1 - Estrutura amostral e tipo de dados.** Os processos cíveis (tipos "Cível Seguros" e "Cível Outros") e os trabalhistas são processos distintos, portanto as amostras são **independentes**. As variáveis analisadas são contínuas:
+
+- $X = \log(VrPago)$, definida apenas para os processos com pagamento (403 cíveis e 36 trabalhistas). O campo em branco indica que não houve pagamento.
+- $Y = \log(Tempo)$, calculada para os processos com duração registrada e maior que zero (844 cíveis e 177 trabalhistas), pois $\log 0$ não está definido.
+
+**Passo 2 - Verificação de normalidade.** O teste de Shapiro-Wilk foi aplicado a $X$ e $Y$ em cada grupo (@tbl-ex3-norm).
+
+```{r}
+#| label: tbl-ex3-norm
+#| tbl-cap: "Teste de Shapiro-Wilk para $X = \\log(VrPago)$ e $Y = \\log(Tempo)$ em cada grupo."
+
+tab <- data.frame(Variavel = rep(c("X", "Y"), each = 2),
+                  Grupo = rep(c("Cível", "Trabalhista"), 2),
+                  n = norm_ex3$n, Mediana = fmt(norm_ex3$Mediana),
+                  W = fmt(norm_ex3$W), p = fmt_p(norm_ex3$p))
+tabela(tab, align = "llrrrr",
+       col.names = c("Variável", "Grupo", "n", "Mediana", "W", "p-valor"))
+```
+
+Para $X$, a normalidade é rejeitada no grupo cível ($W = 0{,}989$; $p = 0{,}004 < 0{,}05$) e não é rejeitada no trabalhista ($W = 0{,}947$; $p = 0{,}084$). Para $Y$, a normalidade é rejeitada nos dois grupos ($p < 0{,}001$). Como a normalidade não vale para os dois grupos em nenhuma das variáveis, utilizou-se o teste não paramétrico de Mann-Whitney [@hollander2014].
+
+**Passo 3 - Hipóteses formais.** Adotou-se $\alpha = 0{,}05$. Para cada variável ($X$ e $Y$):
+$$
+H_0: F_{\text{Cív}} = F_{\text{Trab}} \quad \text{versus} \quad H_1: F_{\text{Cív}} \neq F_{\text{Trab}}.
+$$
+$H_0$: o valor pago (ou o tempo de duração) tem a mesma distribuição nos processos cíveis e trabalhistas. $H_1$: as distribuições diferem, isto é, um dos tipos tende a apresentar valores maiores.
+
+**Passo 4 - Execução dos testes e resultados.**
+
+```{r}
+#| label: ex3-testes
+#| echo: true
+
+# Mann-Whitney bilateral: cível x trabalhista
+mw_X <- wilcox.test(X ~ Vara, data = Q3)  # valor pago
+mw_Y <- wilcox.test(Y ~ Vara, data = Q3)  # tempo de duração
+```
+
+```{r}
+#| label: tbl-ex3-teste
+#| tbl-cap: "Teste de Mann-Whitney: processos cíveis versus trabalhistas."
+
+tab <- data.frame(
+  Variavel = c("X = log(VrPago)", "Y = log(Tempo)"),
+  Med_C = fmt(norm_ex3$Mediana[c(1, 3)]),
+  Med_T = fmt(norm_ex3$Mediana[c(2, 4)]),
+  W = fmt(c(mw_X$statistic, mw_Y$statistic), 0),
+  p = fmt_p(c(mw_X$p.value, mw_Y$p.value))
+)
+tabela(tab, align = "lrrrr",
+       col.names = c("Variável", "Mediana (Cível)",
+                     "Mediana (Trabalhista)", "W", "p-valor"))
+```
+
+Para o valor pago, $W = 8.666$ e $p = 0{,}053$. Para o tempo, $W = 94.857$ e $p < 0{,}001$ (@tbl-ex3-teste).
+
+**Passo 5 - Conclusão.** *Valor pago ($X$):* como $p = 0{,}053 > 0{,}05$, não se rejeita $H_0$ ao nível de 5%. Embora a mediana do valor pago seja maior nos processos cíveis (R\$ 81.356, contra R\$ 32.377 nos trabalhistas), **não há evidência suficiente de diferença entre as distribuições do valor pago**. O resultado está no limite da significância e se baseia em apenas 36 processos trabalhistas com pagamento.
+
+*Tempo ($Y$):* como $p < 0{,}001 < 0{,}05$, rejeita-se $H_0$. **Os processos cíveis tendem a durar mais que os trabalhistas** (medianas de 36,5 e 15 meses, respectivamente). Para a avaliação do risco e a constituição de provisões, isso indica que o tempo de duração deve ser tratado separadamente por tipo de processo.
+
+\newpage
+
+# Exercício 4
+
+\textbf{Comparação de imóveis em duas áreas urbanas (Questao4.csv)}
+
+Investigue se a distribuição do valor venal do metro quadrado dos imóveis apresenta diferenças em relação às seguintes características: grupo (área do projeto ou área de comparação), estrutura (madeira ou outras) e banheiro (interno ou outros). Para cada uma das três comparações, utilize o procedimento estatístico que considerar apropriado. Apresente os resultados dos testes obtidos e interprete-os no contexto do estudo.
+
+\textbf{Resolução:}
+
+```{r}
+#| label: ex4-dados
+#| include: false
+
+Q4 <- read_xlsx("Questao_4.xlsx")
+
+# valor venal por metro quadrado (R$/m2)
+Q4$VM2 <- Q4$VV2007 / Q4$AREA2007
+
+Q4$Localizacao <- factor(Q4$Grupo, levels = c("projeto", "comparacao"),
+                         labels = c("Projeto", "Comparação"))
+Q4$Material <- factor(ifelse(Q4$Estrutura == "madeira",
+                             "Madeira", "Outras"))
+Q4$Banheiro <- factor(ifelse(Q4$Banheiros == "Interna",
+                             "Interno", "Outros"))
+fatores <- c("Localizacao", "Material", "Banheiro")
+
+# Passo 2: Shapiro-Wilk em cada categoria
+norm_ex4 <- do.call(rbind, lapply(fatores, function(f) {
+  sw_grupo(Q4$VM2, Q4[[f]])
+}))
+norm_ex4
+
+# distribuição do banheiro por tipo de material
+table(Q4$Material, Q4$Banheiro)
+```
+
+**Passo 1 - Estrutura amostral e tipo de dados.** Em cada comparação, os imóveis de uma categoria são diferentes dos da outra, portanto as amostras são **independentes**. A variável analisada é o valor venal por metro quadrado, $V = VV2007/AREA2007$ (R\$/m²), contínua, que leva em conta o tamanho dos imóveis. As três comparações são:
+
+- Localização: área de projeto (Morro do Jaburu, $n = 47$) versus área de comparação (Jesus de Nazaré, $n = 70$);
+- Material da estrutura: madeira ($n = 49$) versus outras ($n = 68$: alvenaria, concreto e material aproveitado);
+- Banheiro: interno ($n = 70$) versus outros ($n = 47$: externo ou sem banheiro).
+
+**Passo 2 - Verificação de normalidade.** O teste de Shapiro-Wilk foi aplicado a $V$ em cada categoria (@tbl-ex4-norm).
+
+```{r}
+#| label: tbl-ex4-norm
+#| tbl-cap: "Teste de Shapiro-Wilk para o valor venal por metro quadrado em cada categoria."
+
+tab <- data.frame(
+  Fator = rep(c("Localização", "Material", "Banheiro"), each = 2),
+  Categoria = rownames(norm_ex4), n = norm_ex4$n,
+  Mediana = fmt(norm_ex4$Mediana, 2),
+  W = fmt(norm_ex4$W), p = fmt_p(norm_ex4$p)
+)
+tabela(tab, align = "llrrrr",
+       col.names = c("Fator", "Categoria", "n", "Mediana (R\\$/m²)",
+                     "W", "p-valor"))
+```
+
+A normalidade é rejeitada em todas as seis categorias ($p < 0{,}05$; o maior valor-p é 0,012, na área de projeto). As distribuições são assimétricas à direita, o que justifica o uso do teste de Mann-Whitney nas três comparações [@hollander2014].
+
+**Passo 3 - Hipóteses formais.** Adotou-se $\alpha = 0{,}05$. Para cada fator, com categorias 1 e 2:
+$$
+H_0: F_{1}(V) = F_{2}(V) \quad \text{versus} \quad H_1: F_{1}(V) \neq F_{2}(V).
+$$
+$H_0$: o valor venal por metro quadrado tem a mesma distribuição nas duas categorias. $H_1$: as distribuições diferem, isto é, uma das categorias tende a apresentar valores maiores.
+
+**Passo 4 - Execução dos testes e resultados.**
+
+```{r}
+#| label: ex4-testes
+#| echo: true
+
+# Mann-Whitney bilateral para cada uma das três comparações
+mw_loc <- wilcox.test(VM2 ~ Localizacao, data = Q4)
+mw_mat <- wilcox.test(VM2 ~ Material,    data = Q4)
+mw_ban <- wilcox.test(VM2 ~ Banheiro,    data = Q4)
+```
+
+```{r}
+#| label: tbl-ex4-teste
+#| tbl-cap: "Teste de Mann-Whitney para o valor venal por metro quadrado (R\\$/m²)."
+
+mw <- list(mw_loc, mw_mat, mw_ban)
+tab <- data.frame(
+  Fator = c("Localização", "Material", "Banheiro"),
+  Comp  = c("Projeto x Comparação", "Madeira x Outras",
+            "Interno x Outros"),
+  Med   = paste0(fmt(norm_ex4$Mediana[c(1, 3, 5)], 2), " / ",
+                 fmt(norm_ex4$Mediana[c(2, 4, 6)], 2)),
+  W     = fmt(sapply(mw, function(m) m$statistic), 1),
+  p     = fmt_p(sapply(mw, function(m) m$p.value))
+)
+tabela(tab, align = "llcrr",
+       col.names = c("Fator", "Categorias (1 x 2)", "Medianas (1 / 2)",
+                     "W", "p-valor"))
+```
+
+Os resultados foram: localização, $W = 2.573$ e $p < 0{,}001$; material, $W = 443$ e $p < 0{,}001$; banheiro, $W = 2.035{,}5$ e $p = 0{,}030$ (@tbl-ex4-teste).
+
+**Passo 5 - Conclusão.** Nas três comparações $p < 0{,}05$, portanto rejeita-se $H_0$ em todas:
+
+- *Localização:* o valor por metro quadrado é maior na área de projeto (mediana de R\$ 161,68/m², contra R\$ 78,13/m² na área de comparação);
+- *Material:* os imóveis de madeira têm valor por metro quadrado bem menor (R\$ 66,08/m², contra R\$ 152,29/m² nas demais estruturas);
+- *Banheiro:* os imóveis com banheiro interno têm valor por metro quadrado maior (R\$ 128,00/m², contra R\$ 101,06/m²). Esse resultado deve ser lido com cautela, pois o banheiro interno é mais frequente entre os imóveis que não são de madeira (48 de 68) do que entre os de madeira (22 de 49).
+
+Assim, **as duas áreas não são equivalentes quanto ao valor venal por metro quadrado**, e o material da estrutura está fortemente associado a esse valor. Em estudos posteriores de avaliação de impacto, a área de comparação deve ser usada levando em conta essas diferenças.
+
+\newpage
+
+# Referências {.unnumbered}
+
+\markboth{Referências}{}
+
+::: {#refs}
+:::
+
+\newpage
+
+# Apêndice: códigos em R {.unnumbered}
+
+\markboth{Apêndice: códigos em R}{}
+
+Os códigos abaixo reproduzem todas as tabelas e resultados citados no texto. Os arquivos de dados devem estar na mesma pasta do arquivo `.qmd`.
+
+## Pacotes e funções auxiliares {.unnumbered}
+
+```{r}
+#| ref.label: setup
+#| echo: true
+#| eval: false
+```
+
+## Exercício 1 {.unnumbered}
+
+```{r}
+#| ref.label: ex1-dados
+#| echo: true
+#| eval: false
+```
+
+```{r}
+#| ref.label: tbl-ex1-norm
+#| echo: true
+#| eval: false
+```
+
+```{r}
+#| ref.label: ex1-testes
+#| echo: true
+#| eval: false
+```
+
+```{r}
+#| ref.label: tbl-ex1-a
+#| echo: true
+#| eval: false
+```
+
+```{r}
+#| ref.label: tbl-ex1-b
+#| echo: true
+#| eval: false
+```
+
+## Exercício 2 {.unnumbered}
+
+```{r}
+#| ref.label: ex2-dados
+#| echo: true
+#| eval: false
+```
+
+```{r}
+#| ref.label: tbl-ex2-norm
+#| echo: true
+#| eval: false
+```
+
+```{r}
+#| ref.label: ex2-teste
+#| echo: true
+#| eval: false
+```
+
+## Exercício 3 {.unnumbered}
+
+```{r}
+#| ref.label: ex3-dados
+#| echo: true
+#| eval: false
+```
+
+```{r}
+#| ref.label: tbl-ex3-norm
+#| echo: true
+#| eval: false
+```
+
+```{r}
+#| ref.label: ex3-testes
+#| echo: true
+#| eval: false
+```
+
+```{r}
+#| ref.label: tbl-ex3-teste
+#| echo: true
+#| eval: false
+```
+
+## Exercício 4 {.unnumbered}
+
+```{r}
+#| ref.label: ex4-dados
+#| echo: true
+#| eval: false
+```
+
+```{r}
+#| ref.label: tbl-ex4-norm
+#| echo: true
+#| eval: false
+```
+
+```{r}
+#| ref.label: ex4-testes
+#| echo: true
+#| eval: false
+```
+
+```{r}
+#| ref.label: tbl-ex4-teste
+#| echo: true
+#| eval: false
+```
