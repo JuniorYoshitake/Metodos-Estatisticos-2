@@ -1,0 +1,217 @@
+---
+title: ""
+author: ""
+date: ""
+
+title-block: false
+toc: false
+number-sections: true
+
+lang: pt-BR
+
+bibliography: referencias.bib
+csl: abnt.csl
+
+format:
+  pdf:
+    pdf-engine: lualatex
+    documentclass: article
+    papersize: a4
+    fontsize: 12pt
+    fig-cap-location: top
+
+    geometry:
+      - left=3cm
+      - top=3cm
+      - right=2cm
+      - bottom=2cm
+
+    colorlinks: true
+
+    include-in-header:
+      text: |
+
+        % ------------------------------------------------
+        % Matemática
+        % ------------------------------------------------
+        \usepackage{amsmath}
+        \usepackage{amsfonts}
+        \usepackage{amssymb}
+
+        % ------------------------------------------------
+        % Estilo e layout
+        % ------------------------------------------------
+        \usepackage{fancyhdr}
+        \usepackage{colortbl}
+        \usepackage{titletoc}
+        \usepackage{titlesec}
+        \usepackage{setspace}
+        \usepackage{indentfirst}
+        \usepackage{multirow}
+        \usepackage{float}
+        \usepackage{booktabs}
+        \usepackage{enumitem}
+        \usepackage{quoting}
+        \usepackage{epigraph}
+        \usepackage{adjustbox}
+        \usepackage{bm}
+        \usepackage{subcaption}
+        \usepackage{array}
+
+        % ------------------------------------------------
+        % Bibliografia ABNT
+        % ------------------------------------------------
+        \usepackage[alf]{abntex2cite}
+
+        % ------------------------------------------------
+        % Configurações gerais
+        % ------------------------------------------------
+        \raggedbottom
+
+        % ------------------------------------------------
+        % Cabeçalho
+        % ------------------------------------------------
+        \pagestyle{fancy}
+        \fancyhf{}
+
+        \setlength{\headheight}{16pt}
+
+        \fancyhead[RO, LE]{\thepage}
+        \fancyhead[RE, LO]{\nouppercase{\emph{\leftmark}}}
+
+        \renewcommand{\sectionmark}[1]{\markboth{#1}{}}
+
+        % ------------------------------------------------
+        % Sumário
+        % ------------------------------------------------
+        \titlecontents{section}
+          [0cm]
+          {}
+          {\bfseries\contentslabel{2em}}
+          {}
+          {\titlerule*[.75pc]{.}\contentspage}
+
+        \titlecontents{subsection}
+          [0.75cm]
+          {}
+          {\contentslabel{2em}}
+          {}
+          {\titlerule*[.75pc]{.}\contentspage}
+
+        % ------------------------------------------------
+        % Espaçamento
+        % ------------------------------------------------
+        \onehalfspacing
+
+        \setlength{\parindent}{1.25cm}
+        \setlength{\parskip}{0.3cm}
+        
+        \setlength{\textfloatsep}{6pt}
+        \setlength{\intextsep}{6pt}
+        \setlength{\floatsep}{6pt}
+        
+        \captionsetup[figure]{position=top, skip=2pt}
+        \captionsetup[subfigure]{skip=2pt}
+        
+        % ------------------------------------------------
+        % Títulos
+        % ------------------------------------------------
+        \titlespacing*{\section}{0cm}{0cm}{0.5cm}
+        \titlespacing*{\subsection}{0cm}{0.5cm}{0.5cm}
+        \titlespacing*{\subsubsection}{0cm}{0.5cm}{0.5cm}
+
+---
+
+\begin{titlepage}
+\begin{center}
+
+\vspace*{1cm}
+
+\includegraphics[scale = 1.0]{imagens/unb.png}
+
+\vspace{1cm}
+
+{\bf \large Universidade de Brasília \\
+Departamento de Estatística}
+
+\vspace{3cm}
+
+{\Large \textbf{Prova 1}}
+
+\vspace{2.5cm}
+
+{\large Carlos César Yoshitake Júnior}
+
+\vspace{0.25cm}
+
+{\large Prof. Raul Matsushita}
+
+\end{center}
+
+\vspace{1.5cm}
+
+\begin{flushright}
+\begin{minipage}{7.5cm}
+Resolução dos exercícios práticos da prova 1.
+\end{minipage}
+\end{flushright}
+
+\vspace{2.5cm}
+
+\begin{center}
+{\bf Brasília} \\
+{\bf 2026}
+\end{center}
+
+\end{titlepage}
+
+\tableofcontents
+
+\newpage
+
+\singlespacing
+
+# Exercício 1
+
+\textbf{Dados de terapia postural:}
+
+Antes de avaliar os efeitos da intervenção, investigue se os dados coletados antes da intervenção apresentam evidências de desbalanceamento sistemático entre as medidas dos lados direito e esquerdo. Para isso, aplique o(s) teste(s) apropriado(s) às variáveis pertinentes. Apresente os resultados obtidos e interprete-os, indicando em quais variáveis, se houver, existem evidências de desbalanceamento entre os lados.
+
+\textbf{Resolução:}
+
+# Exercício 2
+
+\textbf{Adesão ao tratamento antirretroviral (Questao2.csv)}
+
+Considere o indicador
+
+$$
+Z = log(\frac{CD4TN}{CD4T0})
+$$
+Estude a normalidade desse indicador entre os pacientes aderentes e não aderentes ao tratamento antirretroviral. Com base nos resultados
+obtidos, compare os dois grupos quanto a esse indicador, utilizando o
+procedimento estatístico que considerar apropriado. Apresente os resultados dos
+testes realizados e interprete-os no contexto do estudo.
+
+\textbf{Resolução:}
+
+# Exercício 3
+
+\textbf{Risco associado a contigências judiciais (Questao3.csv)}
+
+Investigue se os processos provenientes de varas cíveis e trabalhistas apresentam diferenças quanto às distribuições do valor pago e do tempo de duração do processo. Para a análise, considere as transformações
+
+$$
+X = log(VrPago), \quad Y = log(Tempo)
+$$
+Estude a normalidade dessas variáveis em cada grupo e, com base nos resultados obtidos, utilize os procedimentos estatísticos que considerar apropriados para comparar os processos cíveis e trabalhistas. Apresente os resultados dos testes realizados e interprete-os no contexto do estudo.
+
+\textbf{Resolução:}
+
+# Exercício 4
+
+\textbf{Comparação de imóveis em duas áreas urbanas (Questao4.csv)}
+
+Investigue se a distribuição do valor venal do metro quadrado dos imóveis apresenta diferenças em relação às seguintes características: grupo (área do projeto ou área de comparação), estrutura (madeira ou outras) e banheiro (interno ou outros). Para cada uma das três comparações, utilize o procedimento estatístico que considerar apropriado. Apresente os resultados dos testes obtidos e interprete-os no contexto do estudo.
+
+\textbf{Resolução:}
